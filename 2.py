@@ -1,48 +1,50 @@
 #Program: For a given set of training data examples stored in a .CSV file, implement anddemonstrate the Candidate-Elimination algorithm to output a description of the set of all hypotheses consistent with the training examples.
 
-import pandas as pd
+import csv
 
-data = pd.read_csv('enjoysport.csv')
+hypo = []
+data = []
+temp = []
+gen = ['?', '?', '?', '?', '?', '?']
 
-concepts = data.iloc[:, :-1].values
-target = data.iloc[:, -1].values
+with open('enjoysport.csv') as csv_file:
+    fd = csv.reader(csv_file)
+    print("\nThe given training examples are:")
+    for line in fd:
+        print(line)
+        temp.append(line)
+        if line[-1].strip().lower() == "yes":
+            data.append(line)
 
-n = len(concepts[0])
+print("\nThe positive examples are:")
+for line in data:
+    print(line)
 
-specific_h = ['0'] * n
-general_h = [['?' for _ in range(n)]]
+    print("\nThe final specific output:")
+    row = len(data)
+    col = len(data[0])
 
-print("The initialization of the specific and general hypothesis")
-print("S0:", specific_h, "\nG0:", general_h)
+    for j in range(col - 1):
+        hypo.append(data[0][j])
 
-def learn(concepts, target):
-    specific_h = concepts[0].copy()
-    general_h = [['?' for _ in range(len(specific_h))] for _ in range(len(specific_h))]
+    for i in range(row):
+        for j in range(col - 1):
+            if hypo[j] != data[i][j]:
+                hypo[j] = '?'
+print(hypo)
 
-    for i, h in enumerate(concepts):
-        if target[i] == "yes":
-            print(f"\nThe {i+1} training instance is Positive \n", concepts[i])
-            for x in range(len(specific_h)):
-                if h[x] != specific_h[x]:
-                    specific_h[x] = '?'
-                    general_h[x][x] = '?'
-        else:
-            print(f"\nThe {i+1} training instance is Negative \n", concepts[i])
-            for x in range(len(specific_h)):
-                if h[x] != specific_h[x]:
-                    general_h[x][x] = specific_h[x]
-                else:
-                    general_h[x][x] = '?'
+print("\nThe final Generalize output:")
+row = len(temp)
+col = len(temp[0])
 
-        print(f"S{i+1}:\n", specific_h)
-        print(f"G{i+1}:\n", general_h)
-    
-    general_h = [h for h in general_h if h != ['?' for _ in range(len(specific_h))]]
-    return specific_h, general_h
+for i in range(row):
+    if temp[i][-1].strip().lower() == "no":
+        for j in range(col - 1):
+            if temp[i][j] != hypo[j]:
+                gen[j] = hypo[j]
+                print(gen)
+                gen[j] = '?'
 
-s_final, g_final = learn(concepts, target)
 
-print("\nThe Final Specific Hypothesis:")
-print(s_final)
-print("\nThe Final General Hypothesis:")
-print(g_final)
+
+
